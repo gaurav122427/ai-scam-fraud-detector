@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FraudShield</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      width: 380px;
+      min-height: 200px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
+      background: #0f172a;
+      color: #f1f5f9;
+      font-size: 13px;
+    }
+
+    /* Header */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 16px;
+      background: #1e293b;
+      border-bottom: 1px solid #334155;
+    }
+    .logo { display: flex; align-items: center; gap: 8px; }
+    .logo span { font-size: 20px; }
+    .logo-text { font-size: 15px; font-weight: 700; color: #f1f5f9; }
+    .logo-badge {
+      background: #6366f1;
+      color: white;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 10px;
+    }
+    .settings-btn {
+      background: none;
+      border: none;
+      color: #64748b;
+      cursor: pointer;
+      font-size: 16px;
+      padding: 4px;
+      border-radius: 4px;
+    }
+    .settings-btn:hover { color: #94a3b8; }
+
+    /* Tabs */
+    .tabs {
+      display: flex;
+      background: #0f172a;
+      border-bottom: 1px solid #1e293b;
+    }
+    .tab {
+      flex: 1;
+      padding: 8px;
+      text-align: center;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 500;
+      color: #64748b;
+      border: none;
+      background: none;
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s;
+      font-family: inherit;
+    }
+    .tab.active { color: #6366f1; border-bottom-color: #6366f1; }
+    .tab:hover:not(.active) { color: #94a3b8; }
+
+    /* Content */
+    .content { padding: 16px; }
+    .tab-pane { display: none; }
+    .tab-pane.active { display: block; }
+
+    /* Page Scan */
+    .scan-info {
+      background: #1e293b;
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 12px;
+      font-size: 12px;
+      color: #64748b;
+      line-height: 1.5;
+    }
+    .page-url {
+      color: #6366f1;
+      font-size: 11px;
+      word-break: break-all;
+      margin-top: 4px;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 10px;
+      border: none;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      font-family: inherit;
+    }
+    .btn-primary { background: #6366f1; color: white; margin-bottom: 8px; }
+    .btn-primary:hover { background: #4f46e5; }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-secondary { background: #1e293b; color: #94a3b8; border: 1px solid #334155; }
+    .btn-secondary:hover { background: #334155; }
+
+    /* Manual Input */
+    .input-label { font-size: 11px; color: #64748b; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; display: block; }
+    textarea {
+      width: 100%;
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      color: #f1f5f9;
+      font-family: inherit;
+      font-size: 12px;
+      line-height: 1.5;
+      padding: 10px;
+      resize: none;
+      outline: none;
+      margin-bottom: 10px;
+    }
+    textarea:focus { border-color: #6366f1; }
+    textarea::placeholder { color: #475569; }
+
+    /* Loading */
+    .loading {
+      text-align: center;
+      padding: 20px;
+      color: #64748b;
+    }
+    .spinner {
+      width: 28px; height: 28px;
+      border: 2px solid #334155;
+      border-top-color: #6366f1;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      margin: 0 auto 10px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Result */
+    .result { display: none; }
+
+    .risk-card {
+      border-radius: 8px;
+      padding: 14px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .risk-card.low { background: #052e16; border: 1px solid #166534; }
+    .risk-card.medium { background: #451a03; border: 1px solid #92400e; }
+    .risk-card.high { background: #450a0a; border: 1px solid #991b1b; }
+
+    .risk-emoji { font-size: 32px; }
+    .risk-info { flex: 1; }
+    .risk-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #64748b; }
+    .risk-level { font-size: 20px; font-weight: 800; }
+    .risk-card.low .risk-level { color: #22c55e; }
+    .risk-card.medium .risk-level { color: #f59e0b; }
+    .risk-card.high .risk-level { color: #ef4444; }
+
+    .confidence-pill {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+    .risk-card.low .confidence-pill { background: #166534; color: #22c55e; }
+    .risk-card.medium .confidence-pill { background: #92400e; color: #f59e0b; }
+    .risk-card.high .confidence-pill { background: #991b1b; color: #ef4444; }
+
+    .category-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+    .category-tag {
+      background: #6366f1;
+      color: white;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 12px;
+    }
+    .safe-tag {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 12px;
+    }
+    .safe-tag.safe { background: #052e16; color: #22c55e; border: 1px solid #166534; }
+    .safe-tag.unsafe { background: #450a0a; color: #ef4444; border: 1px solid #991b1b; }
+
+    .explanation {
+      background: #1e293b;
+      border-radius: 8px;
+      padding: 10px;
+      font-size: 12px;
+      color: #94a3b8;
+      line-height: 1.6;
+      margin-bottom: 10px;
+    }
+
+    .flags-title { font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+    .flags-list { list-style: none; display: flex; flex-direction: column; gap: 4px; max-height: 100px; overflow-y: auto; }
+    .flags-list li {
+      font-size: 11px;
+      color: #94a3b8;
+      padding: 5px 8px;
+      background: #1e293b;
+      border-radius: 6px;
+      border-left: 2px solid #ef4444;
+    }
+
+    /* Error */
+    .error {
+      background: #450a0a;
+      border: 1px solid #991b1b;
+      border-radius: 8px;
+      padding: 12px;
+      color: #ef4444;
+      font-size: 12px;
+      display: none;
+      margin-top: 8px;
+    }
+
+    /* Settings Panel */
+    #settings-panel { display: none; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: #0f172a; z-index: 10; padding: 16px; }
+    .settings-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+    .settings-header h2 { font-size: 14px; font-weight: 700; }
+    .back-btn { background: none; border: none; color: #6366f1; cursor: pointer; font-size: 13px; font-weight: 600; font-family: inherit; }
+    .settings-label { font-size: 11px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; display: block; }
+    .settings-input {
+      width: 100%;
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      color: #f1f5f9;
+      font-family: inherit;
+      font-size: 12px;
+      padding: 8px 10px;
+      outline: none;
+      margin-bottom: 12px;
+    }
+    .settings-input:focus { border-color: #6366f1; }
+    .save-notice { font-size: 11px; color: #22c55e; display: none; }
+  </style>
+</head>
+<body>
+  <div id="settings-panel">
+    <div class="settings-header">
+      <h2>⚙️ Settings</h2>
+      <button class="back-btn" id="backBtn">← Back</button>
+    </div>
+    <label class="settings-label">API Base URL</label>
+    <input type="text" class="settings-input" id="apiUrlInput" placeholder="http://localhost:8000" />
+    <button class="btn btn-primary" id="saveSettingsBtn" style="margin-bottom:8px">Save Settings</button>
+    <div class="save-notice" id="saveNotice">✅ Settings saved!</div>
+  </div>
+
+  <div id="main-view">
+    <div class="header">
+      <div class="logo">
+        <span>🛡️</span>
+        <span class="logo-text">FraudShield</span>
+        <span class="logo-badge">AI</span>
+      </div>
+      <button class="settings-btn" id="settingsBtn" title="Settings">⚙️</button>
+    </div>
+
+    <div class="tabs">
+      <button class="tab active" data-tab="page">📄 This Page</button>
+      <button class="tab" data-tab="manual">✏️ Manual Input</button>
+    </div>
+
+    <div class="content">
+      <!-- Page Tab -->
+      <div class="tab-pane active" id="tab-page">
+        <div class="scan-info">
+          Scan the current webpage for scam or phishing content.
+          <div class="page-url" id="pageUrl">Loading...</div>
+        </div>
+        <button class="btn btn-primary" id="scanPageBtn">🔍 Scan This Page</button>
+        <button class="btn btn-secondary" id="scanSelectionBtn">✂️ Scan Selected Text</button>
+      </div>
+
+      <!-- Manual Tab -->
+      <div class="tab-pane" id="tab-manual">
+        <label class="input-label">Paste message or email</label>
+        <textarea id="manualInput" rows="5" placeholder="Paste suspicious message here..."></textarea>
+        <button class="btn btn-primary" id="analyzeManualBtn">🔍 Analyze</button>
+      </div>
+
+      <!-- Loading -->
+      <div class="loading" id="loading" style="display:none">
+        <div class="spinner"></div>
+        <p>Analyzing with AI...</p>
+      </div>
+
+      <!-- Result -->
+      <div class="result" id="result">
+        <div class="risk-card" id="riskCard">
+          <div class="risk-emoji" id="riskEmoji"></div>
+          <div class="risk-info">
+            <div class="risk-label">Risk Level</div>
+            <div class="risk-level" id="riskLevel"></div>
+            <div class="confidence-pill" id="confidencePill"></div>
+          </div>
+        </div>
+
+        <div class="category-row">
+          <span class="category-tag" id="categoryTag"></span>
+          <span class="safe-tag" id="safeTag"></span>
+        </div>
+
+        <div class="explanation" id="explanationText"></div>
+
+        <div id="flagsSection" style="display:none">
+          <div class="flags-title">🚩 Red Flags</div>
+          <ul class="flags-list" id="flagsList"></ul>
+        </div>
+      </div>
+
+      <!-- Error -->
+      <div class="error" id="errorBox"></div>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

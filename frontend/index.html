@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FraudShield — AI Scam Detector</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <div class="app">
+    <!-- Header -->
+    <header class="header">
+      <div class="logo">
+        <span class="shield-icon">🛡️</span>
+        <span class="logo-text">FraudShield</span>
+        <span class="logo-badge">AI</span>
+      </div>
+      <button class="theme-toggle" id="themeToggle" title="Toggle dark mode">🌙</button>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main">
+      <div class="hero">
+        <h1>Detect Scams Instantly</h1>
+        <p>Paste any message, email, or SMS — our AI analyzes it for fraud in seconds.</p>
+      </div>
+
+      <!-- Tab Navigation -->
+      <div class="tabs">
+        <button class="tab active" data-tab="single">Single Message</button>
+        <button class="tab" data-tab="chat">Chat / Conversation</button>
+        <button class="tab" data-tab="samples">Sample Tests</button>
+      </div>
+
+      <!-- Single Message Tab -->
+      <div class="tab-content active" id="tab-single">
+        <div class="input-card">
+          <label class="input-label">Paste message, email, or SMS content</label>
+          <textarea
+            id="messageInput"
+            class="message-input"
+            placeholder="Paste the suspicious message here...&#10;&#10;Example: 'Congratulations! You've won $1,000,000. Click here to claim...'"
+            rows="8"
+          ></textarea>
+          <div class="input-footer">
+            <span class="char-count" id="charCount">0 / 10,000</span>
+            <button class="analyze-btn" id="analyzeBtn">
+              <span class="btn-icon">🔍</span>
+              Analyze Message
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Chat Tab -->
+      <div class="tab-content" id="tab-chat">
+        <div class="input-card">
+          <label class="input-label">Paste conversation (one message per line)</label>
+          <div class="chat-helper">Each line = one message. Paste the full conversation below.</div>
+          <textarea
+            id="chatInput"
+            class="message-input"
+            placeholder="Message 1&#10;Message 2&#10;Message 3&#10;..."
+            rows="10"
+          ></textarea>
+          <div class="input-footer">
+            <span class="chat-count" id="chatMsgCount">0 messages</span>
+            <button class="analyze-btn" id="analyzeChatBtn">
+              <span class="btn-icon">💬</span>
+              Analyze Conversation
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Samples Tab -->
+      <div class="tab-content" id="tab-samples">
+        <div class="samples-grid">
+          <div class="sample-card scam" onclick="loadSample('phishing')">
+            <div class="sample-badge">⚠️ Phishing</div>
+            <p>Bank account verification scam</p>
+            <span class="sample-hint">Click to test →</span>
+          </div>
+          <div class="sample-card scam" onclick="loadSample('otp')">
+            <div class="sample-badge">🔴 OTP Fraud</div>
+            <p>Fake OTP request message</p>
+            <span class="sample-hint">Click to test →</span>
+          </div>
+          <div class="sample-card scam" onclick="loadSample('job')">
+            <div class="sample-badge">⚠️ Job Scam</div>
+            <p>Too-good-to-be-true job offer</p>
+            <span class="sample-hint">Click to test →</span>
+          </div>
+          <div class="sample-card scam" onclick="loadSample('lottery')">
+            <div class="sample-badge">🔴 Lottery Scam</div>
+            <p>Prize winning notification</p>
+            <span class="sample-hint">Click to test →</span>
+          </div>
+          <div class="sample-card safe" onclick="loadSample('safe1')">
+            <div class="sample-badge safe-badge">✅ Safe</div>
+            <p>Legitimate bank notification</p>
+            <span class="sample-hint">Click to test →</span>
+          </div>
+          <div class="sample-card safe" onclick="loadSample('safe2')">
+            <div class="sample-badge safe-badge">✅ Safe</div>
+            <p>Normal delivery update SMS</p>
+            <span class="sample-hint">Click to test →</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Loading State -->
+      <div class="loading" id="loading" style="display:none;">
+        <div class="spinner"></div>
+        <p>Analyzing with AI...</p>
+      </div>
+
+      <!-- Results -->
+      <div class="results" id="results" style="display:none;">
+        <!-- Risk Banner -->
+        <div class="risk-banner" id="riskBanner">
+          <div class="risk-left">
+            <span class="risk-icon" id="riskIcon"></span>
+            <div>
+              <div class="risk-label">Risk Level</div>
+              <div class="risk-value" id="riskValue"></div>
+            </div>
+          </div>
+          <div class="risk-right">
+            <div class="confidence-ring">
+              <svg viewBox="0 0 100 100" class="ring-svg">
+                <circle class="ring-bg" cx="50" cy="50" r="40"/>
+                <circle class="ring-fill" id="ringFill" cx="50" cy="50" r="40"
+                  stroke-dasharray="251.2" stroke-dashoffset="251.2"/>
+              </svg>
+              <div class="ring-text">
+                <span class="ring-value" id="confidenceValue">0</span>
+                <span class="ring-label">%</span>
+              </div>
+            </div>
+            <div class="confidence-label">Confidence</div>
+          </div>
+        </div>
+
+        <!-- Category & Safe Badge -->
+        <div class="meta-row">
+          <span class="category-badge" id="categoryBadge"></span>
+          <span class="safe-badge-inline" id="safeBadge"></span>
+        </div>
+
+        <!-- Explanation -->
+        <div class="result-card">
+          <h3 class="card-title">🤖 AI Analysis</h3>
+          <p class="explanation" id="explanationText"></p>
+        </div>
+
+        <!-- Tone Analysis -->
+        <div class="result-card" id="toneCard">
+          <h3 class="card-title">🎭 Tone Analysis</h3>
+          <div class="tone-grid" id="toneGrid"></div>
+        </div>
+
+        <!-- Red Flags -->
+        <div class="result-card" id="redFlagsCard">
+          <h3 class="card-title">🚩 Red Flags Detected</h3>
+          <ul class="flags-list" id="redFlagsList"></ul>
+        </div>
+
+        <!-- Suspicious Phrases -->
+        <div class="result-card" id="phrasesCard">
+          <h3 class="card-title">💬 Suspicious Phrases</h3>
+          <div class="phrases-container" id="phrasesList"></div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-row">
+          <button class="action-btn secondary" onclick="clearResults()">Clear</button>
+          <button class="action-btn primary" onclick="copyReport()">📋 Copy Report</button>
+        </div>
+      </div>
+
+      <!-- Error State -->
+      <div class="error-state" id="errorState" style="display:none;">
+        <span>⚠️</span>
+        <p id="errorText">Something went wrong. Please try again.</p>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <p>FraudShield AI · Powered by Gemini 2.5 Pro · <a href="/docs" target="_blank">API Docs</a></p>
+    </footer>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
